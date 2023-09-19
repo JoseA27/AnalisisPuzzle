@@ -147,3 +147,268 @@ window.onload = () => {
   pantallaCubierta.classList.remove("hide");
   contenedor.classList.add("hide");
 };
+
+
+//Isaac Jose
+function iniciar() {/*
+  let matriz = crearMatrizDesdeDivs();
+    for(i=0;i<matriz.length;i++){
+      for(j=0;j<matriz.length;j++){
+        console.log( matriz[i][j])
+      }
+  }*/
+  solAlgoritmoA(test,3);
+  console.log('hola');
+}
+
+// La función crearMatrizDesdeDivs crea la matriz desde los divs
+function crearMatrizDesdeDivs() {
+  const matrizDesdeDivs = [];
+
+  for (let fila = 0; fila < 3; fila++) {
+    matrizDesdeDivs[fila] = [];
+    for (let columna = 0; columna < 3; columna++) {
+      const div = document.querySelector(`[data-position="${fila}_${columna}"]`);
+      const dataIndex = div.querySelector('img').getAttribute("data-index");
+      if(parseInt(dataIndex)==9){
+        matrizDesdeDivs[fila][columna] = 0;
+      }
+      else{
+        matrizDesdeDivs[fila][columna] = parseInt(dataIndex);
+      }
+      
+    }
+  }
+
+  return matrizDesdeDivs;
+}
+//Algoritmo A*
+
+//Modificar para que la ultima posicion sea un 0
+function generarMatrizCuadrada(size){
+  let matrix = [];
+  let num = 1;
+for (let i = 0; i < size; i++) {
+  let fila = [];
+  for (let j = 0; j < size; j++) {
+    fila.push(num);
+    num++;
+  }
+  matrix.push(fila);
+  }
+  matrix[size-1][size-1] = 0;
+  return matrix;
+}
+
+function calcularIncorrectas(matrizCorrecta,matrizJuego,nsize){
+  let incongruencias = 1;
+  for (let i = 0; i < nsize; i++) {
+    for (let j = 0; j < nsize; j++) {
+      if(matrizCorrecta[i][j]!=matrizJuego[i][j] && matrizJuego[i][j]!=0){
+        incongruencias++;
+      }
+    }
+  }
+  return incongruencias;
+}
+var test = [
+  [8, 2, 3],
+  [4, 5, 6],
+  [7, 0, 1]
+];
+
+
+function main(size){
+  matriz = generarMatrizCuadrada(size);
+  console.log(calcularIncorrectas(matriz, test,size));
+}
+class Nodo {
+  constructor(peso) {
+    this.peso = peso;       //Es lo que cuesta llegar hasta ahí desde el principio
+    this.hijos = [];     //Los movimientos que se pueden hacer a partir del padre
+    this.direccion = [];      //(Pieza a mover, direccion(0=arriba,1=abajo,2=derecha,3=izquierda))
+    this.matriz=[];           //Como están acomodadas las piezas a ese punto
+    this.padre = Nodo;
+  }
+
+  conectar(padre,peso,pieza,direccion,matriz) {
+    this.direccion.push(pieza);           //Numero de pieza
+    this.direccion.push(direccion);       //Hacia donde se mueve
+    this.matriz = matriz;
+    this.peso = peso;
+    this.padre = padre;
+  }
+
+
+}
+
+function compararMatrices(matriz1, matriz2) {
+
+  if(matriz1.length != matriz2.length) {
+    return false;
+  }
+
+  for(let i = 0; i < matriz1.length; i++) {
+    if(matriz1[i].length != matriz2[i].length) {
+      return false;
+    }
+
+    for(let j = 0; j < matriz1[i].length; j++) {
+      if(matriz1[i][j] != matriz2[i][j]) {
+        return false; 
+      }
+    }
+  }
+
+  return true;
+}
+
+
+
+function solAlgoritmoA(mJuego,size){
+  let nmatriz = generarMatrizCuadrada(size);
+  let padre = new Nodo(0);
+  padre.matriz = mJuego;
+  let abiertos = [];
+  let cerrados = [];
+  let indexPadre = 0;
+  abiertos.push(padre);
+  while(compararMatrices(nmatriz,padre.matriz)==false){
+    listaNuevasMatrices = generarPosiblesMatrices(padre,size);
+    /*for (k=0;k<listaNuevasMatrices.length;k++){
+      for(i=0;i<size;i++){
+      for(j=0;j<size;j++){
+         console.log( listaNuevasMatrices[k][0][i][j])
+      }
+    }
+
+    console.log('-----')
+    }*/
+    
+    for(i=0;i<listaNuevasMatrices.length;i++){
+      
+      if(compararMatrices(listaNuevasMatrices[i][0],padre.matriz)==false){
+        console.log('Generando Nodo: '+i)
+        let nodo = new Nodo();
+        
+        let peso = calcularIncorrectas(nmatriz, listaNuevasMatrices[i][0], size)+padre.peso;
+        nodo.conectar(padre, peso, listaNuevasMatrices[i][1], listaNuevasMatrices[i][2], listaNuevasMatrices[i][0]);
+        padre.hijos.push(nodo); 
+        abiertos.push(nodo);
+
+      }
+    }
+    
+    cerrados.push(padre);
+    abiertos.splice(indexPadre, 1);
+    indexPadre = determinarMenor(abiertos);
+    padre = abiertos[indexPadre];
+    console.log(padre.peso)
+    console.log('Cantidad abiertos: '+abiertos.length)
+    console.log('Cantidad cerrados: '+cerrados.length)
+    
+  }
+  let listaCamino = [];
+  while((padre.peso)!=0){
+    let direccion = [];
+    direccion.push(padre.pieza);
+    direccion.push(padre.direccion);
+    listaCamino.push(direccion);
+    padre = padre.padre;
+  }
+  for(i=listaCamino.length-1;i>=0;i--){
+    console.log("Pieza: "+listaCamino[i][1][0]+"  ||  Direccion:"+listaCamino[i][1][1]);
+
+  }
+}
+
+function copiarMatriz(matrizOriginal) {
+  const copia = [];
+
+  for (let i = 0; i < matrizOriginal.length; i++) {
+    copia[i] = [];
+    for (let j = 0; j < matrizOriginal[i].length; j++) {
+      copia[i][j] = matrizOriginal[i][j]; 
+    }
+  }
+
+  return copia;
+}
+
+
+function determinarMenor(abiertos){
+  index = 0;
+  menor = 100000000;
+  for (let i = 0; i < abiertos.length; i++) {
+    if(abiertos[i].peso<menor){
+      menor = abiertos[i].peso;
+      index = i;
+    }
+  }
+  return index;
+}
+
+function generarPosiblesMatrices(padre,size){
+  let matriz = copiarMatriz(padre.matriz)
+  let ubicacionCero = [];
+  //console.log(matriz)
+  //Busca donde se encuentra el 0
+  for(i=0;i<size;i++){
+    for(j=0;j<size;j++){
+      if(matriz[i][j]==0){
+        ubicacionCero.push(i);
+        ubicacionCero.push(j);
+        console.log("ENCONTRO 0");
+      }
+    }
+  }
+  //console.log('X: '+ubicacionCero[0]+"Y: "+ubicacionCero[1]);
+  let listaPosiblesMatrices = [];
+  let row = ubicacionCero[0];
+  let column = ubicacionCero[1];
+  let lista = [];
+
+  if((row+1)<size){
+    listaPosiblesMatrices.push(crearMatrizNueva(matriz, row+1,column, ubicacionCero[0],ubicacionCero[1]));
+    listaPosiblesMatrices.push(matriz[row+1][column]);
+    listaPosiblesMatrices.push(0);
+    lista.push(listaPosiblesMatrices);
+    listaPosiblesMatrices = [];
+  
+  }
+  if((row-1)>=0){
+    listaPosiblesMatrices.push(crearMatrizNueva(matriz, row-1,column, ubicacionCero[0],ubicacionCero[1]));
+    listaPosiblesMatrices.push(matriz[row-1][column]);
+    listaPosiblesMatrices.push(1);
+    lista.push(listaPosiblesMatrices);
+    listaPosiblesMatrices = [];
+
+  }
+  if((column+1)<size){
+    listaPosiblesMatrices.push(crearMatrizNueva(matriz, row,column+1, ubicacionCero[0],ubicacionCero[1]));
+    listaPosiblesMatrices.push(matriz[row][column+1]);
+    listaPosiblesMatrices.push(2);
+    lista.push(listaPosiblesMatrices);
+    listaPosiblesMatrices = [];
+
+  }
+  if((column-1)>=0){
+    listaPosiblesMatrices.push(crearMatrizNueva(matriz, row,column-1, ubicacionCero[0],ubicacionCero[1]));
+    listaPosiblesMatrices.push(matriz[row][column-1]);
+    listaPosiblesMatrices.push(3);
+    lista.push(listaPosiblesMatrices);
+    listaPosiblesMatrices = [];
+ 
+  }
+  return lista
+}
+
+function crearMatrizNueva(matriz,row,column, rowCero, columnCero){
+  let num = matriz[row][column];
+  let nuevaMatriz = copiarMatriz(matriz);
+  nuevaMatriz[row][column] = 0;
+  nuevaMatriz[rowCero][columnCero] = num;
+
+  return nuevaMatriz;
+}
+
