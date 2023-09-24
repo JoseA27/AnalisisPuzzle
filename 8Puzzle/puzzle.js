@@ -373,6 +373,11 @@ function solAlgoritmoA(mJuego,size){
   return listaCamino
 }
 
+/**
+ * Funcion que copia una matriz de tamanno nxn.
+ * @param {Matriz} matrizOriginal Matriz a copiar.
+ * @returns {Matriz} Una copia exacta de la matriz ingresada.
+ */
 function copiarMatriz(matrizOriginal) {
   const copia = [];
 
@@ -386,7 +391,11 @@ function copiarMatriz(matrizOriginal) {
   return copia;
 }
 
-
+/**
+ * Funcion que obtiene el indice del elemento con menor valor en un arreglo
+ * @param {Array<Int>} abiertos Arreglo a procesar
+ * @returns {Int} Indice del elemento con menor valor
+ */
 function determinarMenor(abiertos){
   index = 0;
   menor = 100000000;
@@ -399,6 +408,12 @@ function determinarMenor(abiertos){
   return index;
 }
 
+/**
+ * Funcion que genera un maximo de 3 matrices equivalentes a los 3 movimientos posibles en el juego y los introduce en un arreglo
+ * @param {Matriz} padre Matriz de donde provienen las matrices resultantes
+ * @param {Int} size Tamanno de las matrices a ser creadas 
+ * @returns {Array<Matriz>} Lista de las matrices creadas
+ */
 function generarPosiblesMatrices(padre,size){
   let matriz = copiarMatriz(padre.matriz)
   let ubicacionCero = [];
@@ -454,6 +469,15 @@ function generarPosiblesMatrices(padre,size){
   return lista
 }
 
+/**
+ * Funcion que performa el movimiento(jugada) en una matriz
+ * @param {Matriz} matriz Matriz en la que se va a realizar la jugada
+ * @param {Int} row Fila en donde se ubica el numero a ser movido
+ * @param {Int} column Columna en donde se ubica el numero a ser movido
+ * @param {Int} rowCero Fila en donde se ubica el cero(espacio en blanco)
+ * @param {Int} columnCero Columna en donde se ubica el cero(espacio en blanco)
+ * @returns {Matriz} Matriz con el movimiento realizado
+ */
 function crearMatrizNueva(matriz,row,column, rowCero, columnCero){
   let num = matriz[row][column];
   let nuevaMatriz = copiarMatriz(matriz);
