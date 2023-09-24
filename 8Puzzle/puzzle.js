@@ -1,5 +1,6 @@
 
 
+
 // Referencias Iniciales
 const movimientos = document.getElementById("moves"); // Elemento que muestra el número de movimientos
 const contenedor = document.querySelector(".container"); // Contenedor de las imágenes
@@ -187,62 +188,6 @@ function crearMatrizDesdeDivs() {
 //Algoritmo A*
 
 /**
- * Dado el orden seleccionado en la interfaz se genera una matriz cuadrada con todas las posiciones
- * en la ubicación correcta, y el último elemento siempre es un 0.
- * @param {Int} size El orden de la matriz
- * @returns Matriz, con todos
- */
-function generarMatrizCuadrada(size){
-  let matrix = [];
-  let num = 1;
-for (let i = 0; i < size; i++) {
-  let fila = []; //Ingresa una fila vacia
-  for (let j = 0; j < size; j++) {
-    fila.push(num); //Se llena la fila vacia con los numeros correspondientes
-    num++;
-  }
-  matrix.push(fila);
-  }
-  matrix[size-1][size-1] = 0; //El ultimo elemento siempre debe ser 0
-  return matrix;
-}
-
-
-
-/**
- * Es la heuristica del A*, calcula la cantidad de piezas en el lugar incorrecto
- * Para asi determinar cual es el mejor camino a tomar
- * @param {Array} matrizCorrecta Matriz con todas las piezas en su lugar correcto
- * @param {Array} matrizJuego Matriz con la cual se está jugando
- * @param {Int} nsize El orden de la matriz
- * @returns {Int} Incongruencias, cantidad de piezas en el lugar incorrecto
- */
-function calcularIncorrectas(matrizCorrecta,matrizJuego,nsize){
-  let incongruencias = 1;       //Siempre va a costar 1 hacer cualquier movimiento
-  for (let i = 0; i < nsize; i++) {
-    for (let j = 0; j < nsize; j++) {
-      //Si los elementos de ambas matrices no coinciden aumenta en 1 las incongruencias
-      if(matrizCorrecta[i][j]!=matrizJuego[i][j] && matrizJuego[i][j]!=0){
-        incongruencias++;
-      }
-    }
-  }
-  return incongruencias;
-}
-var test = [
-  [8, 2, 3],
-  [4, 5, 6],
-  [7, 0, 1]
-];
-
-
-function main(size){
-  matriz = generarMatrizCuadrada(size);
-  console.log(calcularIncorrectas(matriz, test,size));
-}
-
-
-/**
  * Nodo que almacena estados del puzzle
  */
 class Nodo {
@@ -278,33 +223,6 @@ class Nodo {
     this.peso = peso;
     this.padre = padre;
   }
-}
-
-/**
- * Compara si dos matrices, que son Arrays de Arrays, son iguales
- * @param {Array} matriz1
- * @param {Array} matriz2 
- * @returns {Boolean}
- */
-function compararMatrices(matriz1, matriz2) {
-
-  if(matriz1.length != matriz2.length) {  //Compara sie tienen el mismo tamaño
-    return false;
-  }
-
-  for(let i = 0; i < matriz1.length; i++) {
-    if(matriz1[i].length != matriz2[i].length) {    //Compara si las filas tienen el mismo tamano de columnas
-      return false;
-    }
-
-    for(let j = 0; j < matriz1[i].length; j++) {    //Compara 1 a 1 los elementos de ambas matrices
-      if(matriz1[i][j] != matriz2[i][j]) {
-        return false; 
-      }
-    }
-  }
-
-  return true;
 }
 
 
@@ -372,42 +290,6 @@ function solAlgoritmoA(mJuego,size){
   }
   return listaCamino
 }
-
-/**
- * Funcion que copia una matriz de tamanno nxn.
- * @param {Matriz} matrizOriginal Matriz a copiar.
- * @returns {Matriz} Una copia exacta de la matriz ingresada.
- */
-function copiarMatriz(matrizOriginal) {
-  const copia = [];
-
-  for (let i = 0; i < matrizOriginal.length; i++) {
-    copia[i] = [];
-    for (let j = 0; j < matrizOriginal[i].length; j++) {
-      copia[i][j] = matrizOriginal[i][j]; 
-    }
-  }
-
-  return copia;
-}
-
-/**
- * Funcion que obtiene el indice del elemento con menor valor en un arreglo
- * @param {Array<Int>} abiertos Arreglo a procesar
- * @returns {Int} Indice del elemento con menor valor
- */
-function determinarMenor(abiertos){
-  index = 0;
-  menor = 100000000;
-  for (let i = 0; i < abiertos.length; i++) {
-    if(abiertos[i].peso<menor){
-      menor = abiertos[i].peso;
-      index = i;
-    }
-  }
-  return index;
-}
-
 /**
  * Funcion que genera un maximo de 3 matrices equivalentes a los 3 movimientos posibles en el juego y los introduce en un arreglo
  * @param {Matriz} padre Matriz de donde provienen las matrices resultantes
@@ -470,7 +352,7 @@ function generarPosiblesMatrices(padre,size){
 }
 
 /**
- * Funcion que performa el movimiento(jugada) en una matriz
+ * Funcion que realiza el movimiento(jugada) en una matriz
  * @param {Matriz} matriz Matriz en la que se va a realizar la jugada
  * @param {Int} row Fila en donde se ubica el numero a ser movido
  * @param {Int} column Columna en donde se ubica el numero a ser movido
@@ -478,6 +360,8 @@ function generarPosiblesMatrices(padre,size){
  * @param {Int} columnCero Columna en donde se ubica el cero(espacio en blanco)
  * @returns {Matriz} Matriz con el movimiento realizado
  */
+
+
 function crearMatrizNueva(matriz,row,column, rowCero, columnCero){
   let num = matriz[row][column];
   let nuevaMatriz = copiarMatriz(matriz);
@@ -486,4 +370,122 @@ function crearMatrizNueva(matriz,row,column, rowCero, columnCero){
 
   return nuevaMatriz;
 }
+var test = [
+  [8, 2, 3],
+  [4, 5, 6],
+  [7, 0, 1]
+];
 
+/**
+ * Es la heuristica del A*, calcula la cantidad de piezas en el lugar incorrecto
+ * Para asi determinar cual es el mejor camino a tomar
+ * @param {Array} matrizCorrecta Matriz con todas las piezas en su lugar correcto
+ * @param {Array} matrizJuego Matriz con la cual se está jugando
+ * @param {Int} nsize El orden de la matriz
+ * @returns {Int} Incongruencias, cantidad de piezas en el lugar incorrecto
+ */
+function calcularIncorrectas(matrizCorrecta,matrizJuego,nsize){
+  let incongruencias = 1;       //Siempre va a costar 1 hacer cualquier movimiento
+  for (let i = 0; i < nsize; i++) {
+    for (let j = 0; j < nsize; j++) {
+      //Si los elementos de ambas matrices no coinciden aumenta en 1 las incongruencias
+      if(matrizCorrecta[i][j]!=matrizJuego[i][j] && matrizJuego[i][j]!=0){
+        incongruencias++;
+      }
+    }
+  }
+  return incongruencias;
+}
+
+/**
+ * Dado el orden seleccionado en la interfaz se genera una matriz cuadrada con todas las posiciones
+ * en la ubicación correcta, y el último elemento siempre es un 0.
+ * @param {Int} size El orden de la matriz
+ * @returns Matriz, con todos
+ */
+function generarMatrizCuadrada(size){
+  let matrix = [];
+  let num = 1;
+for (let i = 0; i < size; i++) {
+  let fila = []; //Ingresa una fila vacia
+  for (let j = 0; j < size; j++) {
+    fila.push(num); //Se llena la fila vacia con los numeros correspondientes
+    num++;
+  }
+  matrix.push(fila);
+  }
+  matrix[size-1][size-1] = 0; //El ultimo elemento siempre debe ser 0
+  return matrix;
+}
+
+/**
+ * Compara si dos matrices, que son Arrays de Arrays, son iguales
+ * @param {Array} matriz1
+ * @param {Array} matriz2 
+ * @returns {Boolean}
+ */
+function compararMatrices(matriz1, matriz2) {
+
+  if(matriz1.length != matriz2.length) {  //Compara sie tienen el mismo tamaño
+    return false;
+  }
+
+  for(let i = 0; i < matriz1.length; i++) {
+    if(matriz1[i].length != matriz2[i].length) {    //Compara si las filas tienen el mismo tamano de columnas
+      return false;
+    }
+
+    for(let j = 0; j < matriz1[i].length; j++) {    //Compara 1 a 1 los elementos de ambas matrices
+      if(matriz1[i][j] != matriz2[i][j]) {
+        return false; 
+      }
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Funcion que copia una matriz de tamanno nxn.
+ * @param {Matriz} matrizOriginal Matriz a copiar.
+ * @returns {Matriz} Una copia exacta de la matriz ingresada.
+ */
+function copiarMatriz(matrizOriginal) {
+  const copia = [];
+
+  for (let i = 0; i < matrizOriginal.length; i++) {
+    copia[i] = [];
+    for (let j = 0; j < matrizOriginal[i].length; j++) {
+      copia[i][j] = matrizOriginal[i][j]; 
+    }
+  }
+
+  return copia;
+}
+
+/**
+ * Funcion que obtiene el indice del elemento con menor valor en un arreglo
+ * @param {Array<Int>} abiertos Arreglo a procesar
+ * @returns {Int} Indice del elemento con menor valor
+ */
+function determinarMenor(abiertos){
+  index = 0;
+  menor = 100000000;
+  for (let i = 0; i < abiertos.length; i++) {
+    if(abiertos[i].peso<menor){
+      menor = abiertos[i].peso;
+      index = i;
+    }
+  }
+  return index;
+}
+
+
+
+
+
+
+function main(size){
+  matriz = generarMatrizCuadrada(size);
+  console.log(calcularIncorrectas(matriz, test,size));
+}
