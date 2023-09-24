@@ -1,3 +1,5 @@
+
+
 // Referencias Iniciales
 const movimientos = document.getElementById("moves"); // Elemento que muestra el número de movimientos
 const contenedor = document.querySelector(".container"); // Contenedor de las imágenes
@@ -184,26 +186,42 @@ function crearMatrizDesdeDivs() {
 }
 //Algoritmo A*
 
-//Modificar para que la ultima posicion sea un 0
+/**
+ * Dado el orden seleccionado en la interfaz se genera una matriz cuadrada con todas las posiciones
+ * en la ubicación correcta, y el último elemento siempre es un 0.
+ * @param {Int} size El orden de la matriz
+ * @returns Matriz, con todos
+ */
 function generarMatrizCuadrada(size){
   let matrix = [];
   let num = 1;
 for (let i = 0; i < size; i++) {
-  let fila = [];
+  let fila = []; //Ingresa una fila vacia
   for (let j = 0; j < size; j++) {
-    fila.push(num);
+    fila.push(num); //Se llena la fila vacia con los numeros correspondientes
     num++;
   }
   matrix.push(fila);
   }
-  matrix[size-1][size-1] = 0;
+  matrix[size-1][size-1] = 0; //El ultimo elemento siempre debe ser 0
   return matrix;
 }
 
+
+
+/**
+ * Es la heuristica del A*, calcula la cantidad de piezas en el lugar incorrecto
+ * Para asi determinar cual es el mejor camino a tomar
+ * @param {Array} matrizCorrecta Matriz con todas las piezas en su lugar correcto
+ * @param {Array} matrizJuego Matriz con la cual se está jugando
+ * @param {Int} nsize El orden de la matriz
+ * @returns {Int} Incongruencias, cantidad de piezas en el lugar incorrecto
+ */
 function calcularIncorrectas(matrizCorrecta,matrizJuego,nsize){
-  let incongruencias = 1;
+  let incongruencias = 1;       //Siempre va a costar 1 hacer cualquier movimiento
   for (let i = 0; i < nsize; i++) {
     for (let j = 0; j < nsize; j++) {
+      //Si los elementos de ambas matrices no coinciden aumenta en 1 las incongruencias
       if(matrizCorrecta[i][j]!=matrizJuego[i][j] && matrizJuego[i][j]!=0){
         incongruencias++;
       }
@@ -222,15 +240,37 @@ function main(size){
   matriz = generarMatrizCuadrada(size);
   console.log(calcularIncorrectas(matriz, test,size));
 }
+
+
+/**
+ * Nodo que almacena estados del puzzle
+ */
 class Nodo {
+  /**
+   * 
+   * @param {Int} peso Es lo que le cuesta llegar hasta este estado
+   * @property {Int} peso Es lo que le cuesta llegar hasta es estado
+   * @property {Array} hijos Son las posibles soluciones que nacen
+   * @property {Array} direccion Indica la pieza y el movimiento que se debe hacer para llegar hasta él
+   * @property {Array} matriz Estado de las piezas del puzzle
+   * @property {Nodo} padre  Estado anterior
+   */
+
   constructor(peso) {
     this.peso = peso;       //Es lo que cuesta llegar hasta ahí desde el principio
-    this.hijos = [];     //Los movimientos que se pueden hacer a partir del padre
+    this.hijos = [];        //Los movimientos que se pueden hacer a partir del padre
     this.direccion = [];      //(Pieza a mover, direccion(0=arriba,1=abajo,2=derecha,3=izquierda))
     this.matriz=[];           //Como están acomodadas las piezas a ese punto
     this.padre = Nodo;
   }
-
+  /**
+   * Conecta el nodo hijo con el nodo padre y guarda toda su información
+   * @param {Nodo} padre Nodo Anterior
+   * @param {Int} peso El coste de llegar
+   * @param {Int} pieza Que pueza se mueve
+   * @param {Int} direccion Hacia donde se mueve la pieza
+   * @param {Array} matriz La matriz en ese estado
+   */
   conectar(padre,peso,pieza,direccion,matriz) {
     this.direccion.push(pieza);           //Numero de pieza
     this.direccion.push(direccion);       //Hacia donde se mueve
@@ -238,22 +278,26 @@ class Nodo {
     this.peso = peso;
     this.padre = padre;
   }
-
-
 }
 
+/**
+ * Compara si dos matrices, que son Arrays de Arrays, son iguales
+ * @param {Array} matriz1
+ * @param {Array} matriz2 
+ * @returns {Boolean}
+ */
 function compararMatrices(matriz1, matriz2) {
 
-  if(matriz1.length != matriz2.length) {
+  if(matriz1.length != matriz2.length) {  //Compara sie tienen el mismo tamaño
     return false;
   }
 
   for(let i = 0; i < matriz1.length; i++) {
-    if(matriz1[i].length != matriz2[i].length) {
+    if(matriz1[i].length != matriz2[i].length) {    //Compara si las filas tienen el mismo tamano de columnas
       return false;
     }
 
-    for(let j = 0; j < matriz1[i].length; j++) {
+    for(let j = 0; j < matriz1[i].length; j++) {    //Compara 1 a 1 los elementos de ambas matrices
       if(matriz1[i][j] != matriz2[i][j]) {
         return false; 
       }
@@ -264,17 +308,23 @@ function compararMatrices(matriz1, matriz2) {
 }
 
 
-
+/**
+ * La función resuelve un puzzle de orden n conm el algoritmo A*
+ * @param {Array} mJuego Es la matriz con la posicion de las fichas en el puzzle
+ * @param {Int} size Es el tamaño de la matriz, la cual se selecciona en la interfaz
+ * @returns {Array} Retorna el camino que tiene que seguir para resolver el puzzle [pieza, direccion]
+ *                  Es un Array de Arrays, cada elemento lleva la pieza y la dirección
+ */
 function solAlgoritmoA(mJuego,size){
-  let nmatriz = generarMatrizCuadrada(size);
-  let padre = new Nodo(0);
+  let nmatriz = generarMatrizCuadrada(size);    //Matriz con las piezas en la posicion correctsa
+  let padre = new Nodo(0);                      //Estado inicial del puzzle
   padre.matriz = mJuego;
-  let abiertos = [];
-  let cerrados = [];
+  let abiertos = [];                            //Lista con los nodos abiertos
+  let cerrados = [];                            //Lista con los nodos cerrados
   let indexPadre = 0;
   abiertos.push(padre);
   while(compararMatrices(nmatriz,padre.matriz)==false){
-    listaNuevasMatrices = generarPosiblesMatrices(padre,size);
+    listaNuevasMatrices = generarPosiblesMatrices(padre,size); //Retorna una lista con todas las posibles jugadas
     /*for (k=0;k<listaNuevasMatrices.length;k++){
       for(i=0;i<size;i++){
       for(j=0;j<size;j++){
@@ -286,23 +336,23 @@ function solAlgoritmoA(mJuego,size){
     }*/
     
     for(i=0;i<listaNuevasMatrices.length;i++){
-      
-      if(compararMatrices(listaNuevasMatrices[i][0],padre.matriz)==false){
+      //No puede registrar un movimiento que lo devuelve al estado del padre
+      if(compararMatrices(listaNuevasMatrices[i][0],padre.matriz)==false){ 
         console.log('Generando Nodo: '+i)
         let nodo = new Nodo();
-        
-        let peso = calcularIncorrectas(nmatriz, listaNuevasMatrices[i][0], size)+padre.peso;
+        //Calcula el peso para llegar hasta ahí incluyendo el peso del padre
+        let peso = calcularIncorrectas(nmatriz, listaNuevasMatrices[i][0], size)+padre.peso; 
         nodo.conectar(padre, peso, listaNuevasMatrices[i][1], listaNuevasMatrices[i][2], listaNuevasMatrices[i][0]);
-        padre.hijos.push(nodo); 
-        abiertos.push(nodo);
+        padre.hijos.push(nodo);       //Al padre se le agrega un nuevo hijo
+        abiertos.push(nodo);          //Agrega a la lista de nodos abiertos
 
       }
     }
     
-    cerrados.push(padre);
-    abiertos.splice(indexPadre, 1);
-    indexPadre = determinarMenor(abiertos);
-    padre = abiertos[indexPadre];
+    cerrados.push(padre);             //Se guarda el padre en la lista de cerrados
+    abiertos.splice(indexPadre, 1);   //Saca al padre de la lista de abiertos
+    indexPadre = determinarMenor(abiertos); //Revisa cual de los abiertos pesa menos
+    padre = abiertos[indexPadre];           //Declara el nuevo padre con lo anterior
     console.log(padre.peso)
     console.log('Cantidad abiertos: '+abiertos.length)
     console.log('Cantidad cerrados: '+cerrados.length)
@@ -320,6 +370,7 @@ function solAlgoritmoA(mJuego,size){
     console.log("Pieza: "+listaCamino[i][1][0]+"  ||  Direccion:"+listaCamino[i][1][1]);
 
   }
+  return listaCamino
 }
 
 function copiarMatriz(matrizOriginal) {
