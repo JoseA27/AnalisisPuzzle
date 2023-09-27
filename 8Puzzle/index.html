@@ -1,24 +1,81 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Puzzle Game</title>
 
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div class="cover-screen">
-      <p id="result"></p>
-      <button id="start-button">Start Game</button>
+    
+      <div class="container-menu">
+
+
+<div class = "container-buttom" >
+
+  <button class="boton-imagen" onclick="AsignarImagen('./assets/imagen1.jpg')">
+      <img src="./assets/imagen1.jpg" alt="Imagen 1">  
+  </button>
+
+  <button onclick="AsignarImagen('./assets/imagen2.jpeg')" class="boton-imagen">
+    <img src="./assets/imagen2.jpeg" alt="Imagen 2">
+  </button>
+
+  <button class="boton-imagen" onclick="AsignarImagen('./assets/imagen3.jpg')">
+    <img src="./assets/imagen3.jpg" alt="Imagen 3">
+  </button>
+
+  <button class="boton-imagen" onclick="AsignarImagen('./assets/imagen4.jpg')">
+    <img src="./assets/imagen4.jpg" alt="Imagen 4">
+  </button>
+
+  <button class="boton-imagen" onclick="AsignarImagen('./assets/imagen5.jpg')">
+    <img src="./assets/imagen5.jpg" alt="Imagen 5">
+  </button>
+
+</div>
+<label for="tamanioTablero">Tamaño de Tablero:</label>
+
+<select id="tamanioTablero">
+  <option value=3>3x3</option>
+  <option value=4>4x4</option>
+  <option value=5>5x5</option>
+  <option value=6>6x6</option>
+  <option value=7>7x7</option>
+  <option value=8>8x8</option>
+  <option value=9>9x9</option>
+  <option value=10>10x10</option>
+  <option value=11>11x11</option>
+  <option value=12>12x12</option>
+  <option value=13>13x13</option>
+  <option value=14>14x14</option>
+  <option value=15>15x15</option>
+  <option value=16>16x16</option>
+  <option value=17>17x17</option>
+  <option value=18>18x18</option>
+  <option value=19>19x19</option>
+  <option value=20>20x20</option>
+    </select>
+
+<p id="result"></p>
+<button id="start-button">Start Game</button>
+
+</div>
+
     </div>
+    <button onclick="location.reload();">Close</button>
+    <button onclick="iniciar()">Iniciar</Button>
     <div id="moves"></div>
-    <div ><button onclick="iniciar()">botn</button></div>
-    <div class="slider-game">
-      <div class="container"></div>
-      <div class="original-image">
-        <img src="original_image.png" alt="" />
+    <div class="container-game">
+      <div class="slider-game">
+        <div class="container" id="container"></div>
+        <div class="original-image">
+          <img alt="" id="originalImage"/>
+        </div>
       </div>
     </div>
+
 
     <script src="puzzle.js"></script>
   </body>
