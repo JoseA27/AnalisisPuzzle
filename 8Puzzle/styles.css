@@ -109,7 +109,48 @@
   background: none;
 }
 
- 
 
+
+
+
+
+
+
+.fondo {
+  background: rgba(33, 41, 52, .85);
+  bottom: 0;
+  display: none;
+  left: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 999;
+  transition: background  .6s;
+}
+
+.contenidoFondo {
+  background: #07a4af;
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  white-space: pre-line;
+  height: 190px;
+  width: 250px;
+}
+.aceptarBoton{
+  margin: auto;
+  background-color: #197bbd;
+  color: #351330;
+  margin-top: 10px;
+  height: 60px;
+  width: 50x;
+}
+
+.stats{
+  margin: auto;
+  margin-top: 10px;
+  font-size: 20px;
+  color: #000000;
+}
 
 

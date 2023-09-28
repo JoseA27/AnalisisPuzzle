@@ -292,7 +292,7 @@ function intercambiarImagenes2(nodo,size) {
       console.error("Dirección no válida en el objeto nodo.");
       return;
   }
-
+  imprimirMov(pieza,direccion);
   const imagen2 = document.getElementById((size*size)-1); //como la ultima ficha siempre es el 0, busca la del orden**2
   const srcImagen1 = imagen1.src; //Obtiene las imagenes
   const srcImagen2 = imagen2.src; 
@@ -398,11 +398,12 @@ class NodoArbol {
     this._direccion = nuevoPadre;
   }
 }
+
+
+
 //Backtracking
 function iniciarB() {
 
-
-  
  size = parseInt(document.getElementById('tamanioTablero').value);
  let matriz = crearMatriz(size);
  
@@ -778,7 +779,27 @@ function iniciarA() {
 
 }
 
-
+function imprimirMov(pieza,direccion){
+  let texto;
+  switch(direccion){
+    case 0:
+      texto = 'abajo'
+      break;
+    case 1:
+      texto = 'arriba'
+      break;
+    case 2:
+      texto = 'izquierda'
+      break;
+    case 3:
+      texto = 'derecha'
+      break;
+    default:
+      texto = 'abajo'
+      break;
+  }
+  console.log("Pieza "+pieza + " se mueve hacia "+texto);
+}
 
 /**
  * Nodo que almacena estados del puzzle
@@ -860,7 +881,9 @@ function solAlgoritmoA(mJuego,size){
     console.log('Cantidad abiertos: '+abiertos.length)
     console.log('Cantidad cerrados: '+cerrados.length)
     if(abiertos.length>50000){
-      break;
+      sinSolucion();
+      console.log("Puzzle demasiado complejo, no logra resolver");
+      return [];
     }
   }
   let listaCamino = [];
@@ -1056,6 +1079,16 @@ function determinarMenor(abiertos){
   return index; //Se retorna la posicion en la que esta
 }
 
+function sinSolucion(){
+  let fondo = document.getElementById('pantallaFondo');
+  let fondoTexto = document.getElementById("textoEmergente");
+  fondoTexto.innerHTML = 'Problema muy complejo, no se encontro solucion';
+  fondo.style.display = "flex";
 
+  aceptarBtn.addEventListener("click", function(e) {
+    e.preventDefault();
+    fondo.style.display = "none";
+  });
+}
 
 
