@@ -7,6 +7,7 @@ var matrizImagenesDesordenada = []
 var arrayImagenesdesordenadas = []
 var cantidadImagenes = parseInt(document.getElementById('tamanioTablero').value);
 
+//--------------------------------------------------------------------------------
 function desordenarArray(array) {
   const shuffledArray = [...array];
 
@@ -18,15 +19,17 @@ function desordenarArray(array) {
   return shuffledArray;
 }
 
+//--------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------
+
 function desordenarMatriz(matriz) {
   const n = matriz.length;
   if (n === 0 || n !== matriz[0].length) {
     throw new Error("La matriz debe ser cuadrada (nxn)");
   }
-
   // Guardar el elemento en la posición [n-1][n-1]
   const elementoFijo = matriz[n - 1][n - 1];
-
   // Crear una lista con todos los elementos de la matriz excepto el elemento fijo
   const elementosDesordenables = [];
   for (let i = 0; i < n; i++) {
@@ -58,18 +61,18 @@ function desordenarMatriz(matriz) {
     }
     matrizDesordenada.push(fila);
   }
-
   return matrizDesordenada;
 }
-
+//--------------------------------------------------------------------------------
 var idSeleccionado = null
-
 const getImageId = (num) => {
   idSeleccionado = num
   console.log(idSeleccionado)
 };
 
+//--------------------------------------------------------------------------------
 
+//--------------------------------------------------------------------------------
 function AsignarImagen(imagen) {
   arrayImagenes = []
   matrizImagenes = []
@@ -81,9 +84,6 @@ function AsignarImagen(imagen) {
     const image = new Image();
     image.src = imagenSeleccionada
 
-
-
-
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const width = image.width;
@@ -91,18 +91,15 @@ function AsignarImagen(imagen) {
     cantidadImagenes = parseInt(document.getElementById('tamanioTablero').value);
     const squareSize = width / parseInt(cantidadImagenes);
 
-
     canvas.width = width;
     canvas.height = height;
 
     ctx.drawImage(image, 0, 0, width, height);
 
-
     let contadorArray = 0
     let encontradoArray = 0
     let encontradoFila = 0
     let contadorFila = 0
-
 
     for (let y = 0; y < height; y += squareSize) {
       let tempArray = []
@@ -136,21 +133,12 @@ function AsignarImagen(imagen) {
           squareImage.setAttribute('onclick', ("getImageNumber("+num+")"))
           arrayImagenes.push(squareImage);
           tempArray.push(squareImage)
-          
         }
         contadorArray++;
-
-
-
-
       }
       contadorFila++;
       matrizImagenes.push(tempArray)
     }
-
-
-
-
     arrayImagenesdesordenadas = desordenarArray(arrayImagenes);
     matrizImagenesDesordenada = desordenarMatriz(matrizImagenes);
   }
@@ -184,9 +172,6 @@ function mostrarImagenes(images) {
     //imagen.style.height = (100/cantidadImagenes)+""; // Agrega un borde rojo de 2px, por ejemplo
     // Puedes agregar otras propiedades CSS según tus necesidades
   }
-
-
-
 }
 // Referencias Iniciales
 const movimientos = document.getElementById("moves"); // Elemento que muestra el número de movimientos
@@ -262,6 +247,52 @@ window.onload = () => {
 };
 
 /**
+ * En base al grid que se forma de forma automatica y aleatoria lo convierte en una matriz según sus id
+ * el id son el numero de de pieza indexado
+ * @param {Int} size Orden de la matriz cuadrada
+ * @returns {Array} Matriz en base al grid del puzzle
+ */
+function crearMatriz(size) {
+  const contenedor = document.getElementById("container"); //selecciona el container y las img que son las piezas
+  const imagenes = contenedor.getElementsByTagName("img"); 
+
+  const matrizImagenes = [];
+
+  for (let i = 0; i < size; i++) {
+    const fila = [];
+    for (let j = 0; j < size; j++) {
+      const index = i * size + j; 
+      if(imagenes[index].id==(size*size)-1){  //Si encuentra el elemento que es igual al orden**2, lo pone como 0
+        fila.push(0);                         //Ya que siempre la ultima ficha es el cero
+      }
+      else{
+        const numeroID = parseInt(imagenes[index].id)+1;
+        fila.push(numeroID);
+      }
+    }
+    matrizImagenes.push(fila);
+  }
+
+  return matrizImagenes;
+}
+
+/**
+ * Busca en que fila y columna se encuentra un elemento en la matriz del puzzle
+ * @param {Array} matriz Matriz del estado del puzzle
+ * @param {Int} pieza  Pieza que se desea buscar
+ * @returns {Int, Int} Fila, Columna
+ */
+function encontrarPieza(matriz, pieza) {
+  for (let fila = 0; fila < matriz.length; fila++) {
+    for (let columna = 0; columna < matriz[fila].length; columna++) {
+      if (matriz[fila][columna] == pieza) {
+        return { fila, columna }; 
+      }
+    }
+  }
+}
+
+/**
  * Dado un nodo saca su matriz, la dirección y la pieza, con esto intercambia las imagenes
  * y los indez en el html
  * @param {Nodo} nodo Nodo del estado actual
@@ -305,73 +336,355 @@ function intercambiarImagenes2(nodo,size) {
   imagen2.id = pieza-1;
 
 }
+
+//Algoritmo A*
+function iniciarA() {
+  size = parseInt(document.getElementById('tamanioTablero').value);
+  let matriz = crearMatriz(size);
+  let listaNodos = solAlgoritmoA(matriz,size)
+
+  let currentIndex = listaNodos.length-1;
+  const interval = setInterval(function() {
+   if (currentIndex >= 0) {
+     const nodo = listaNodos[currentIndex];
+     intercambiarImagenes2(nodo,size);
+     currentIndex--;
+   } else {
+     clearInterval(interval); // Detener el intervalo cuando se hayan procesado todos los nodos
+   }
+  }, 700);
+}
+
+function imprimirMov(pieza,direccion){
+  let texto;
+  switch(direccion){
+    case 0:
+      texto = 'abajo'
+      break;
+    case 1:
+      texto = 'arriba'
+      break;
+    case 2:
+      texto = 'izquierda'
+      break;
+    case 3:
+      texto = 'derecha'
+      break;
+    default:
+      texto = 'abajo'
+      break;
+  }
+  console.log("Pieza "+pieza + " se mueve hacia "+texto);
+}
+
 /**
- * Busca en que fila y columna se encuentra un elemento en la matriz del puzzle
- * @param {Array} matriz Matriz del estado del puzzle
- * @param {Int} pieza  Pieza que se desea buscar
- * @returns {Int, Int} Fila, Columna
+ * Nodo que almacena estados del puzzle
  */
-function encontrarPieza(matriz, pieza) {
-  for (let fila = 0; fila < matriz.length; fila++) {
-    for (let columna = 0; columna < matriz[fila].length; columna++) {
-      if (matriz[fila][columna] == pieza) {
-        return { fila, columna }; 
+class Nodo {
+  /**
+   * 
+   * @param {Int} peso Es lo que le cuesta llegar hasta este estado
+   * @property {Int} peso Es lo que le cuesta llegar hasta es estado
+   * @property {Array} hijos Son las posibles soluciones que nacen
+   * @property {Array} direccion Indica la pieza y el movimiento que se debe hacer para llegar hasta él
+   * @property {Array} matriz Estado de las piezas del puzzle
+   * @property {Nodo} padre  Estado anterior
+   */
+
+  constructor(peso) {
+    this.peso = peso;       //Es lo que cuesta llegar hasta ahí desde el principio
+    this.hijos = [];        //Los movimientos que se pueden hacer a partir del padre
+    this.direccion = [];      //(Pieza a mover, direccion(0=arriba,1=abajo,2=derecha,3=izquierda))
+    this.matriz=[];           //Como están acomodadas las piezas a ese punto
+    this.padre = Nodo;
+  }
+  /**
+   * Conecta el nodo hijo con el nodo padre y guarda toda su información
+   * @param {Nodo} padre Nodo Anterior
+   * @param {Int} peso El coste de llegar
+   * @param {Int} pieza Que pueza se mueve
+   * @param {Int} direccion Hacia donde se mueve la pieza
+   * @param {Array} matriz La matriz en ese estado
+   */
+  conectar(padre,peso,pieza,direccion,matriz) {
+    this.direccion.push(pieza);           //Numero de pieza
+    this.direccion.push(direccion);       //Hacia donde se mueve
+    this.matriz = matriz;
+    this.peso = peso;
+    this.padre = padre;
+  }
+}
+
+
+/**
+ * La función resuelve un puzzle de orden n conm el algoritmo A*
+ * @param {Array} mJuego Es la matriz con la posicion de las fichas en el puzzle
+ * @param {Int} size Es el tamaño de la matriz, la cual se selecciona en la interfaz
+ * @returns {Array} Retorna el camino que tiene que seguir para resolver el puzzle [pieza, direccion]
+ *                  Es un Array de Arrays, cada elemento lleva la pieza y la dirección
+ */
+function solAlgoritmoA(mJuego,size){
+  let nmatriz = generarMatrizCuadrada(size);    //Matriz con las piezas en la posicion correctsa
+  let padre = new Nodo(0);                      //Estado inicial del puzzle
+  padre.matriz = mJuego;
+  padre.padre.matriz = null
+  let abiertos = [];                            //Lista con los nodos abiertos
+  let cerrados = [];                            //Lista con los nodos cerrados
+  let indexPadre = 0;
+  abiertos.push(padre);
+  console.log(padre)
+  while(compararMatrices(nmatriz,padre.matriz)==false){
+    listaNuevasMatrices = generarPosiblesMatrices(padre,size); //Retorna una lista con todas las posibles jugadas
+    
+    for(i=0;i<listaNuevasMatrices.length;i++){
+      //No puede registrar un movimiento que lo devuelve al estado del padre
+      if(compararMatrices(listaNuevasMatrices[i][0],padre.padre.matriz)==false){ 
+        let nodo = new Nodo();
+        //Calcula el peso para llegar hasta ahí incluyendo el peso del padre
+        let peso = calcularIncorrectas(nmatriz, listaNuevasMatrices[i][0], size)+padre.peso; 
+        nodo.conectar(padre, peso, listaNuevasMatrices[i][1], listaNuevasMatrices[i][2], listaNuevasMatrices[i][0]);
+        padre.hijos.push(nodo);       //Al padre se le agrega un nuevo hijo
+        abiertos.push(nodo);          //Agrega a la lista de nodos abiertos
+
+      }
+    }
+
+    cerrados.push(padre);             //Se guarda el padre en la lista de cerrados
+    abiertos.splice(indexPadre, 1);   //Saca al padre de la lista de abiertos
+    indexPadre = determinarMenor(abiertos); //Revisa cual de los abiertos pesa menos
+    padre = abiertos[indexPadre];           //Declara el nuevo padre con lo anterior
+    console.log(padre.peso)
+    console.log('Cantidad abiertos: '+abiertos.length)
+    console.log('Cantidad cerrados: '+cerrados.length)
+    if(abiertos.length>50000){
+      sinSolucion();
+      console.log("Puzzle demasiado complejo, no logra resolver");
+      return [];
+    }
+  }
+  let listaCamino = [];
+  while((padre.peso)!=0){
+    let direccion = [];
+    listaCamino.push(padre);
+    padre = padre.padre;
+  }
+  return listaCamino
+}
+/**
+ * Funcion que genera un maximo de 3 matrices equivalentes a los 3 movimientos posibles en el juego y los introduce en un arreglo
+ * @param {Matriz} padre Matriz de donde provienen las matrices resultantes
+ * @param {Int} size Tamanno de las matrices a ser creadas 
+ * @returns {Array<Matriz>} Lista de las matrices creadas
+ */
+function generarPosiblesMatrices(padre,size){
+  let matriz = copiarMatriz(padre.matriz)
+  let ubicacionCero = [];
+  //Busca donde se encuentra el 0 (el espacio vacio)
+  for(i=0;i<size;i++){
+    for(j=0;j<size;j++){
+      if(matriz[i][j]==0){
+        ubicacionCero.push(i);
+        ubicacionCero.push(j);
+        //console.log("ENCONTRO 0");
       }
     }
   }
+  let listaPosiblesMatrices = []; //Aqui van a ir los movimientos a hacer
+  let row = ubicacionCero[0];
+  let column = ubicacionCero[1];
+  let lista = [];
+
+  //Esta cadena de ifs evita que se hagan movimientos que no son posibles (ej: mover hacia abajo cuando ya se esta en la ultima fila)
+  //Dentro de los ifs se crea la crea la matriz con el movimiento
+  if((row+1)<size){ 
+    listaPosiblesMatrices.push(crearMatrizNueva(matriz, row+1,column, ubicacionCero[0],ubicacionCero[1]));
+    listaPosiblesMatrices.push(matriz[row+1][column]);
+    listaPosiblesMatrices.push(0);
+    lista.push(listaPosiblesMatrices);
+    listaPosiblesMatrices = [];
+  
+  }
+  if((row-1)>=0){
+    listaPosiblesMatrices.push(crearMatrizNueva(matriz, row-1,column, ubicacionCero[0],ubicacionCero[1]));
+    listaPosiblesMatrices.push(matriz[row-1][column]);
+    listaPosiblesMatrices.push(1);
+    lista.push(listaPosiblesMatrices);
+    listaPosiblesMatrices = [];
+
+  }
+  if((column+1)<size){
+    listaPosiblesMatrices.push(crearMatrizNueva(matriz, row,column+1, ubicacionCero[0],ubicacionCero[1]));
+    listaPosiblesMatrices.push(matriz[row][column+1]);
+    listaPosiblesMatrices.push(2);
+    lista.push(listaPosiblesMatrices);
+    listaPosiblesMatrices = [];
+
+  }
+  if((column-1)>=0){
+    listaPosiblesMatrices.push(crearMatrizNueva(matriz, row,column-1, ubicacionCero[0],ubicacionCero[1]));
+    listaPosiblesMatrices.push(matriz[row][column-1]);
+    listaPosiblesMatrices.push(3);
+    lista.push(listaPosiblesMatrices);
+    listaPosiblesMatrices = [];
+ 
+  }
+  return lista
 }
+
 /**
- * En base al grid que se forma de forma automatica y aleatoria lo convierte en una matriz según sus id
- * el id son el numero de de pieza indexado
- * @param {Int} size Orden de la matriz cuadrada
- * @returns {Array} Matriz en base al grid del puzzle
+ * Funcion que realiza el movimiento(jugada) en una matriz
+ * @param {Matriz} matriz Matriz en la que se va a realizar la jugada
+ * @param {Int} row Fila en donde se ubica el numero a ser movido
+ * @param {Int} column Columna en donde se ubica el numero a ser movido
+ * @param {Int} rowCero Fila en donde se ubica el cero(espacio en blanco)
+ * @param {Int} columnCero Columna en donde se ubica el cero(espacio en blanco)
+ * @returns {Matriz} Matriz con el movimiento realizado
  */
-function crearMatriz(size) {
-  const contenedor = document.getElementById("container"); //selecciona el container y las img que son las piezas
-  const imagenes = contenedor.getElementsByTagName("img"); 
+function crearMatrizNueva(matriz,row,column, rowCero, columnCero){
+  let num = matriz[row][column]; //Se guarda provisonalmente el numero que va a cambiar por el cero
+  let nuevaMatriz = copiarMatriz(matriz); //Se copia la matriz que se tenia
+  nuevaMatriz[row][column] = 0;
+  nuevaMatriz[rowCero][columnCero] = num; //Se intercambian el cero por el numero
+  
+  return nuevaMatriz;
+}
+var test = [
+  [8, 2, 3],
+  [4, 5, 6],
+  [7, 0, 1]
+];
 
-  const matrizImagenes = [];
-
-  for (let i = 0; i < size; i++) {
-    const fila = [];
-    for (let j = 0; j < size; j++) {
-      const index = i * size + j; 
-      if(imagenes[index].id==(size*size)-1){  //Si encuentra el elemento que es igual al orden**2, lo pone como 0
-        fila.push(0);                         //Ya que siempre la ultima ficha es el cero
-      }
-      else{
-        const numeroID = parseInt(imagenes[index].id)+1;
-        fila.push(numeroID);
+/**
+ * Es la heuristica del A*, calcula la cantidad de piezas en el lugar incorrecto
+ * Para asi determinar cual es el mejor camino a tomar
+ * @param {Array} matrizCorrecta Matriz con todas las piezas en su lugar correcto
+ * @param {Array} matrizJuego Matriz con la cual se está jugando
+ * @param {Int} nsize El orden de la matriz
+ * @returns {Int} Incongruencias, cantidad de piezas en el lugar incorrecto
+ */
+function calcularIncorrectas(matrizCorrecta,matrizJuego,nsize){
+  let incongruencias = 1;       //Siempre va a costar 1 hacer cualquier movimiento
+  for (let i = 0; i < nsize; i++) {
+    for (let j = 0; j < nsize; j++) {
+      //Si los elementos de ambas matrices no coinciden aumenta en 1 las incongruencias
+      if(matrizCorrecta[i][j]!=matrizJuego[i][j] && matrizJuego[i][j]!=0){
+        incongruencias++;
       }
     }
-    matrizImagenes.push(fila);
+  }
+  return incongruencias;
+}
+
+/**
+ * Dado el orden seleccionado en la interfaz se genera una matriz cuadrada con todas las posiciones
+ * en la ubicación correcta, y el último elemento siempre es un 0.
+ * @param {Int} size El orden de la matriz
+ * @returns Matriz, con todos
+ */
+function generarMatrizCuadrada(size){
+  let matrix = [];
+  let num = 1;
+for (let i = 0; i < size; i++) {
+  let fila = []; //Ingresa una fila vacia
+  for (let j = 0; j < size; j++) {
+    fila.push(num); //Se llena la fila vacia con los numeros correspondientes
+    num++;
+  }
+  matrix.push(fila);
+  }
+  matrix[size-1][size-1] = 0; //El ultimo elemento siempre debe ser 0
+  return matrix;
+}
+
+/**
+ * Compara si dos matrices, que son Arrays de Arrays, son iguales
+ * @param {Array} matriz1
+ * @param {Array} matriz2 
+ * @returns {Boolean}
+ */
+function compararMatrices(matriz1, matriz2) {
+  //Si es nula retorna false 
+  if(matriz2==null){
+    return false;
+  }
+  for(let i = 0; i < matriz1.length; i++) {
+    for(let j = 0; j < matriz1[i].length; j++) {    //Compara 1 a 1 los elementos de ambas matrices
+      if(matriz1[i][j] != matriz2[i][j]) {
+        return false; 
+
+      }
+    }
+  }
+  console.log('CUMPLE')
+  return true;
+}
+
+/**
+ * Funcion que copia una matriz de tamanno nxn.
+ * @param {Matriz} matrizOriginal Matriz a copiar.
+ * @returns {Matriz} Una copia exacta de la matriz ingresada.
+ */
+function copiarMatriz(matrizOriginal) {
+  const copia = [];
+
+  for (let i = 0; i < matrizOriginal.length; i++) { //Se recorren los elementos y se van copiando
+    copia[i] = [];
+    for (let j = 0; j < matrizOriginal[i].length; j++) {
+      copia[i][j] = matrizOriginal[i][j]; 
+    }
   }
 
-  return matrizImagenes;
+  return copia;
 }
+
+/**
+ * Funcion que obtiene el indice del elemento con menor valor en un arreglo
+ * @param {Array<Int>} abiertos Arreglo a procesar
+ * @returns {Int} Indice del elemento con menor valor
+ */
+function determinarMenor(abiertos){
+  index = 0;
+  menor = 100000000;
+  for (let i = 0; i < abiertos.length; i++) { //Se recorre elemento por elemento y se va guardando el menor de todos
+    if(abiertos[i].peso<menor){
+      menor = abiertos[i].peso;
+      index = i;
+    }
+  }
+  return index; //Se retorna la posicion en la que esta
+}
+
+function sinSolucion(){
+  let fondo = document.getElementById('pantallaFondo');
+  let fondoTexto = document.getElementById("textoEmergente");
+  fondoTexto.innerHTML = 'Problema muy complejo, no se encontro solucion';
+  fondo.style.display = "flex";
+
+  aceptarBtn.addEventListener("click", function(e) {
+    e.preventDefault();
+    fondo.style.display = "none";
+  });
+}
+
+//--------------------------------------Backtracking-----------------------------
 class NodoArbol {
   constructor(pEstado) {
-    this._estado = pEstado;
+    this._estado = pEstado;   //Atributo del estado del nodo, en este caso la matriz
     this._hijos = [];
-    this._padre = null;
+    this._padre = null;      // Agrega atributo para almacenar la direccion del padre de cada nodo
     this._direccion = null; // Agregar atributo para la acción o paso tomado
-
   }
-
   // Getter y Setter para el atributo estado
   get estado() {
     return this._estado;
   }
-
   set estado(nuevoEstado) {
     this._estado = nuevoEstado;
   }
-
   // Getter y Setter para el atributo hijos
   get hijos() {
     return this._hijos;
   }
-
   set hijos(nuevosHijos) {
     this._hijos = nuevosHijos;
     if(nuevosHijos != null){
@@ -380,16 +693,13 @@ class NodoArbol {
       }
     }
   }
-
   // Getter y Setter para el atributo padre
   get padre() {
     return this._padre;
   }
-
   set padre(nuevoPadre) {
     this._padre = nuevoPadre;
   }
-
   // Getter para el atributo accion
   get direccion() {
     return this._direccion;
@@ -398,12 +708,13 @@ class NodoArbol {
     this._direccion = nuevoPadre;
   }
 }
-
-
-
-//Backtracking
+//--------------------------------------------------------------------------------
+/**
+ * Funcion inicial para empezar a resolver el backtraking utilizando el algoritmo
+ * @param {number} size - El tamaño del tablero o matriz que se utilizará en el problema.
+ * @returns {array|null} - Una lista de pasos de la solución si se encuentra, o null si no se encuentra una solución.
+ */
 function iniciarB() {
-
  size = parseInt(document.getElementById('tamanioTablero').value);
  let matriz = crearMatriz(size);
  
@@ -418,8 +729,7 @@ function iniciarB() {
      listaPasos.push(solucion);      //Hace push el nodo a la lista de pasos
      const copiaAnterior = solucion;      // Realiza una copia del nodo actual para guardar la dirección.
      solucion = solucion.padre;       // Avanza al nodo padre para continuar retrocediendo.
-     direccionMovimiento(copiaAnterior, solucion);      // Registra la dirección o acción tomada entre los nodos.
-
+     direccion = direccionMovimiento(copiaAnterior, solucion);      // Registra la dirección o acción tomada entre los nodos.
    }
    // Muestra los pasos de la solución en orden inverso.
    for (let i = listaPasos.length - 1; i >= 0; i--) {
@@ -428,14 +738,26 @@ function iniciarB() {
      console.log(imprimir(NodoArbol._estado));
    }
    // Devuelve la lista de pasos como una solución.
-   return listaPasos;
+   let currentIndex = listaPasos.length-1;
+   
+   const interval = setInterval(function() {
+   if (currentIndex >= 0) {
+     const nodo = listaPasos[currentIndex];
+     intercambiarImagenes1(nodo,size);
+     currentIndex--;
+   } else {
+     clearInterval(interval); // Detener el intervalo cuando se hayan procesado todos los nodos
+   }
+    }, 700);
   } else {
     // Si no se encuentra una solución, muestra un mensaje y devuelve null.
-    console.log("No se encontró solución");
+    sinSolucion();
+
     return null;
   }
 }
-
+//--------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
 /**
  * Función que determina la dirección del movimiento entre dos estados de un rompecabezas numérico.
  * @param {NodoArbol} NodoArbolAnterior - El nodo anterior que representa un estado.
@@ -449,24 +771,24 @@ function direccionMovimiento(NodoArbolAnterior, matrizActual) {
 
   // Determinar la dirección del movimiento
   if (filaActual === filaAnterior - 1 && columnaActual === columnaAnterior) {
-    // Si el 0 se movió hacia arriba, establece la dirección como 0 (Arriba)
-    NodoArbolAnterior.direccion = 1;
-    return 1; // Arriba
+    // Si el 0 se movió hacia arriba, establece la dirección como 1 (Arriba)
+    NodoArbolAnterior.direccion = [matrizActual._estado[filaAnterior][columnaAnterior], 1];
+    return [matrizActual._estado[filaAnterior][columnaAnterior], 1]; // [Pieza, Arriba]
   } else if (filaActual === filaAnterior + 1 && columnaActual === columnaAnterior) {
-    // Si el 0 se movió hacia abajo, establece la dirección como 1 (Abajo)
-    NodoArbolAnterior.direccion = 0;
-    return 0; // Abajo
+    // Si el 0 se movió hacia abajo, establece la dirección como 0 (Abajo)
+    NodoArbolAnterior.direccion = [matrizActual._estado[filaAnterior][columnaAnterior], 0];
+    return [matrizActual._estado[filaAnterior][columnaAnterior], 0]; // [Pieza, Abajo]
   } else if (filaActual === filaAnterior && columnaActual === columnaAnterior - 1) {
-    // Si el 0 se movió hacia la derecha, establece la dirección como 2 (Derecha)
-    NodoArbolAnterior.direccion = 3;
-    return 3; // Derecha
+    // Si el 0 se movió hacia la derecha, establece la dirección como 3 (Derecha)
+    NodoArbolAnterior.direccion = [matrizActual._estado[filaAnterior][columnaAnterior], 3];
+    return [matrizActual._estado[filaAnterior][columnaAnterior], 3]; // [Pieza, Derecha]
   } else if (filaActual === filaAnterior && columnaActual === columnaAnterior + 1) {
-    // Si el 0 se movió hacia la izquierda, establece la dirección como 3 (Izquierda)
-    NodoArbolAnterior.direccion = 2;
-    return 2; // Izquierda
+    // Si el 0 se movió hacia la izquierda, establece la dirección como 2 (Izquierda)
+    NodoArbolAnterior.direccion = [matrizActual._estado[filaAnterior][columnaAnterior], 2];
+    return [matrizActual._estado[filaAnterior][columnaAnterior], 2]; // [Pieza, Izquierda]
   }
 }
-
+//--------------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------------------------------------------
 /**
@@ -475,10 +797,8 @@ function direccionMovimiento(NodoArbolAnterior, matrizActual) {
  * @returns {NodoArbol|null} - El nodo del árbol que representa la solución encontrada o null si no se encontró una solución.
  */
 function main2(inicio) {
-    
   console.log("Matriz que entra al main2 a partir de id:", inicio);// 
-  inicio = [[4, 1, 3], [2, 5, 6], [7, 0, 8]];    // 
-  console.log("Matriz Predeterminada:", inicio);// 
+  //inicio = [[4,1,3],[2,5,6],[7,0,8]]
   // Crea un objeto NodoArbol a partir de la matriz de inicio.
   const Inicial = new NodoArbol(inicio);
 
@@ -754,341 +1074,51 @@ function generarSolucion(tamaño) {
   // Devuelve la matriz de solución, que representa una solución válida para el rompecabezas.
   return solucion;
 }
-
-
-
-//Algoritmo A*
-function iniciarA() {
-
-  size = parseInt(document.getElementById('tamanioTablero').value);
-  let matriz = crearMatriz(size);
-  console.log(matriz)
-  let listaNodos = solAlgoritmoA(matriz,size)
-
-  let currentIndex = listaNodos.length-1;
-  const interval = setInterval(function() {
-   if (currentIndex >= 0) {
-     const nodo = listaNodos[currentIndex];
-     intercambiarImagenes2(nodo,size);
-     currentIndex--;
-   } else {
-     clearInterval(interval); // Detener el intervalo cuando se hayan procesado todos los nodos
-   }
-  }, 700);
-
-
-}
-
-function imprimirMov(pieza,direccion){
-  let texto;
-  switch(direccion){
-    case 0:
-      texto = 'abajo'
+//---------------------------------------------------------------------------------------------------------------
+/**
+ * Intercambia las imágenes de dos elementos en una matriz de juego y actualiza sus identificadores.
+ *
+ * @param {Object} nodo - El nodo que contiene información sobre el estado y la dirección de la pieza a mover.
+ * @param {number} size - El tamaño de la matriz de juego.
+ */
+function intercambiarImagenes1(nodo, size) {
+  // Extrae la matriz del nodo, la pieza que se mueve y la dirección.
+  let mat = nodo._estado;
+  let pieza = nodo._direccion[0];
+  let direccion = nodo._direccion[1];
+  // Encuentra la fila y columna en la que se encuentra la pieza.
+  let {fila, columna} = encontrarPieza(mat,pieza);  //Busca en que fila y columna se encuentra la pieza
+  const imagen1 = document.getElementById(pieza-1); //Obtiene el elemento en el html que corresponde a la pieza
+  switch (direccion) {
+    case 0: // Sumar 1 a fila (0==Abajo)
+      fila += 1;
       break;
-    case 1:
-      texto = 'arriba'
+    case 1: // Restar 1 a fila (1==arriba)
+      fila -= 1;
       break;
-    case 2:
-      texto = 'izquierda'
+    case 2: // Sumar 1 a columna (2==derecha)
+      columna += 1;
       break;
-    case 3:
-      texto = 'derecha'
+    case 3: // Restar 1 a columna (0==izquierda)
+      columna -= 1;
       break;
     default:
-      texto = 'abajo'
-      break;
+      console.error("Dirección no válida en el objeto nodo.");
+      return;
   }
-  console.log("Pieza "+pieza + " se mueve hacia "+texto);
+  imprimirMov(pieza,direccion);
+  const imagen2 = document.getElementById((size*size)-1); //como la ultima ficha siempre es el 0, busca la del orden**2
+  const srcImagen1 = imagen1.src; //Obtiene las imagenes
+  const srcImagen2 = imagen2.src; 
+
+  imagen1.src = srcImagen2;  //Intercambia las imagenes
+  imagen2.src = srcImagen1;
+
+
+  imagen1.id = (size*size)-1; //Intercambia los id
+  imagen2.id = pieza-1;
+
 }
-
-/**
- * Nodo que almacena estados del puzzle
- */
-class Nodo {
-  /**
-   * 
-   * @param {Int} peso Es lo que le cuesta llegar hasta este estado
-   * @property {Int} peso Es lo que le cuesta llegar hasta es estado
-   * @property {Array} hijos Son las posibles soluciones que nacen
-   * @property {Array} direccion Indica la pieza y el movimiento que se debe hacer para llegar hasta él
-   * @property {Array} matriz Estado de las piezas del puzzle
-   * @property {Nodo} padre  Estado anterior
-   */
-
-  constructor(peso) {
-    this.peso = peso;       //Es lo que cuesta llegar hasta ahí desde el principio
-    this.hijos = [];        //Los movimientos que se pueden hacer a partir del padre
-    this.direccion = [];      //(Pieza a mover, direccion(0=arriba,1=abajo,2=derecha,3=izquierda))
-    this.matriz=[];           //Como están acomodadas las piezas a ese punto
-    this.padre = Nodo;
-  }
-  /**
-   * Conecta el nodo hijo con el nodo padre y guarda toda su información
-   * @param {Nodo} padre Nodo Anterior
-   * @param {Int} peso El coste de llegar
-   * @param {Int} pieza Que pueza se mueve
-   * @param {Int} direccion Hacia donde se mueve la pieza
-   * @param {Array} matriz La matriz en ese estado
-   */
-  conectar(padre,peso,pieza,direccion,matriz) {
-    this.direccion.push(pieza);           //Numero de pieza
-    this.direccion.push(direccion);       //Hacia donde se mueve
-    this.matriz = matriz;
-    this.peso = peso;
-    this.padre = padre;
-  }
-}
-
-
-/**
- * La función resuelve un puzzle de orden n conm el algoritmo A*
- * @param {Array} mJuego Es la matriz con la posicion de las fichas en el puzzle
- * @param {Int} size Es el tamaño de la matriz, la cual se selecciona en la interfaz
- * @returns {Array} Retorna el camino que tiene que seguir para resolver el puzzle [pieza, direccion]
- *                  Es un Array de Arrays, cada elemento lleva la pieza y la dirección
- */
-function solAlgoritmoA(mJuego,size){
-  let nmatriz = generarMatrizCuadrada(size);    //Matriz con las piezas en la posicion correctsa
-  let padre = new Nodo(0);                      //Estado inicial del puzzle
-  padre.matriz = mJuego;
-  padre.padre.matriz = null
-  let abiertos = [];                            //Lista con los nodos abiertos
-  let cerrados = [];                            //Lista con los nodos cerrados
-  let indexPadre = 0;
-  abiertos.push(padre);
-  console.log(padre)
-  while(compararMatrices(nmatriz,padre.matriz)==false){
-    listaNuevasMatrices = generarPosiblesMatrices(padre,size); //Retorna una lista con todas las posibles jugadas
-    
-    for(i=0;i<listaNuevasMatrices.length;i++){
-      //No puede registrar un movimiento que lo devuelve al estado del padre
-      if(compararMatrices(listaNuevasMatrices[i][0],padre.padre.matriz)==false){ 
-        let nodo = new Nodo();
-        //Calcula el peso para llegar hasta ahí incluyendo el peso del padre
-        let peso = calcularIncorrectas(nmatriz, listaNuevasMatrices[i][0], size)+padre.peso; 
-        nodo.conectar(padre, peso, listaNuevasMatrices[i][1], listaNuevasMatrices[i][2], listaNuevasMatrices[i][0]);
-        padre.hijos.push(nodo);       //Al padre se le agrega un nuevo hijo
-        abiertos.push(nodo);          //Agrega a la lista de nodos abiertos
-
-      }
-    }
-
-    cerrados.push(padre);             //Se guarda el padre en la lista de cerrados
-    abiertos.splice(indexPadre, 1);   //Saca al padre de la lista de abiertos
-    indexPadre = determinarMenor(abiertos); //Revisa cual de los abiertos pesa menos
-    padre = abiertos[indexPadre];           //Declara el nuevo padre con lo anterior
-    console.log(padre.peso)
-    console.log('Cantidad abiertos: '+abiertos.length)
-    console.log('Cantidad cerrados: '+cerrados.length)
-    if(abiertos.length>50000){
-      sinSolucion();
-      console.log("Puzzle demasiado complejo, no logra resolver");
-      return [];
-    }
-  }
-  let listaCamino = [];
-  while((padre.peso)!=0){
-    let direccion = [];
-    listaCamino.push(padre);
-    padre = padre.padre;
-  }
-  return listaCamino
-}
-/**
- * Funcion que genera un maximo de 3 matrices equivalentes a los 3 movimientos posibles en el juego y los introduce en un arreglo
- * @param {Matriz} padre Matriz de donde provienen las matrices resultantes
- * @param {Int} size Tamanno de las matrices a ser creadas 
- * @returns {Array<Matriz>} Lista de las matrices creadas
- */
-function generarPosiblesMatrices(padre,size){
-  let matriz = copiarMatriz(padre.matriz)
-  let ubicacionCero = [];
-  //Busca donde se encuentra el 0 (el espacio vacio)
-  for(i=0;i<size;i++){
-    for(j=0;j<size;j++){
-      if(matriz[i][j]==0){
-        ubicacionCero.push(i);
-        ubicacionCero.push(j);
-        //console.log("ENCONTRO 0");
-      }
-    }
-  }
-
-  let listaPosiblesMatrices = []; //Aqui van a ir los movimientos a hacer
-  let row = ubicacionCero[0];
-  let column = ubicacionCero[1];
-  let lista = [];
-
-  //Esta cadena de ifs evita que se hagan movimientos que no son posibles (ej: mover hacia abajo cuando ya se esta en la ultima fila)
-  //Dentro de los ifs se crea la crea la matriz con el movimiento
-  if((row+1)<size){ 
-    listaPosiblesMatrices.push(crearMatrizNueva(matriz, row+1,column, ubicacionCero[0],ubicacionCero[1]));
-    listaPosiblesMatrices.push(matriz[row+1][column]);
-    listaPosiblesMatrices.push(0);
-    lista.push(listaPosiblesMatrices);
-    listaPosiblesMatrices = [];
-  
-  }
-  if((row-1)>=0){
-    listaPosiblesMatrices.push(crearMatrizNueva(matriz, row-1,column, ubicacionCero[0],ubicacionCero[1]));
-    listaPosiblesMatrices.push(matriz[row-1][column]);
-    listaPosiblesMatrices.push(1);
-    lista.push(listaPosiblesMatrices);
-    listaPosiblesMatrices = [];
-
-  }
-  if((column+1)<size){
-    listaPosiblesMatrices.push(crearMatrizNueva(matriz, row,column+1, ubicacionCero[0],ubicacionCero[1]));
-    listaPosiblesMatrices.push(matriz[row][column+1]);
-    listaPosiblesMatrices.push(2);
-    lista.push(listaPosiblesMatrices);
-    listaPosiblesMatrices = [];
-
-  }
-  if((column-1)>=0){
-    listaPosiblesMatrices.push(crearMatrizNueva(matriz, row,column-1, ubicacionCero[0],ubicacionCero[1]));
-    listaPosiblesMatrices.push(matriz[row][column-1]);
-    listaPosiblesMatrices.push(3);
-    lista.push(listaPosiblesMatrices);
-    listaPosiblesMatrices = [];
- 
-  }
-  return lista
-}
-
-/**
- * Funcion que realiza el movimiento(jugada) en una matriz
- * @param {Matriz} matriz Matriz en la que se va a realizar la jugada
- * @param {Int} row Fila en donde se ubica el numero a ser movido
- * @param {Int} column Columna en donde se ubica el numero a ser movido
- * @param {Int} rowCero Fila en donde se ubica el cero(espacio en blanco)
- * @param {Int} columnCero Columna en donde se ubica el cero(espacio en blanco)
- * @returns {Matriz} Matriz con el movimiento realizado
- */
-function crearMatrizNueva(matriz,row,column, rowCero, columnCero){
-  let num = matriz[row][column]; //Se guarda provisonalmente el numero que va a cambiar por el cero
-  let nuevaMatriz = copiarMatriz(matriz); //Se copia la matriz que se tenia
-  nuevaMatriz[row][column] = 0;
-  nuevaMatriz[rowCero][columnCero] = num; //Se intercambian el cero por el numero
-  
-  return nuevaMatriz;
-}
-var test = [
-  [8, 2, 3],
-  [4, 5, 6],
-  [7, 0, 1]
-];
-
-/**
- * Es la heuristica del A*, calcula la cantidad de piezas en el lugar incorrecto
- * Para asi determinar cual es el mejor camino a tomar
- * @param {Array} matrizCorrecta Matriz con todas las piezas en su lugar correcto
- * @param {Array} matrizJuego Matriz con la cual se está jugando
- * @param {Int} nsize El orden de la matriz
- * @returns {Int} Incongruencias, cantidad de piezas en el lugar incorrecto
- */
-function calcularIncorrectas(matrizCorrecta,matrizJuego,nsize){
-  let incongruencias = 1;       //Siempre va a costar 1 hacer cualquier movimiento
-  for (let i = 0; i < nsize; i++) {
-    for (let j = 0; j < nsize; j++) {
-      //Si los elementos de ambas matrices no coinciden aumenta en 1 las incongruencias
-      if(matrizCorrecta[i][j]!=matrizJuego[i][j] && matrizJuego[i][j]!=0){
-        incongruencias++;
-      }
-    }
-  }
-  return incongruencias;
-}
-
-/**
- * Dado el orden seleccionado en la interfaz se genera una matriz cuadrada con todas las posiciones
- * en la ubicación correcta, y el último elemento siempre es un 0.
- * @param {Int} size El orden de la matriz
- * @returns Matriz, con todos
- */
-function generarMatrizCuadrada(size){
-  let matrix = [];
-  let num = 1;
-for (let i = 0; i < size; i++) {
-  let fila = []; //Ingresa una fila vacia
-  for (let j = 0; j < size; j++) {
-    fila.push(num); //Se llena la fila vacia con los numeros correspondientes
-    num++;
-  }
-  matrix.push(fila);
-  }
-  matrix[size-1][size-1] = 0; //El ultimo elemento siempre debe ser 0
-  return matrix;
-}
-
-/**
- * Compara si dos matrices, que son Arrays de Arrays, son iguales
- * @param {Array} matriz1
- * @param {Array} matriz2 
- * @returns {Boolean}
- */
-function compararMatrices(matriz1, matriz2) {
-  //Si es nula retorna false 
-  if(matriz2==null){
-    return false;
-  }
-  for(let i = 0; i < matriz1.length; i++) {
-    for(let j = 0; j < matriz1[i].length; j++) {    //Compara 1 a 1 los elementos de ambas matrices
-      if(matriz1[i][j] != matriz2[i][j]) {
-        return false; 
-
-      }
-    }
-  }
-  console.log('CUMPLE')
-  return true;
-}
-
-/**
- * Funcion que copia una matriz de tamanno nxn.
- * @param {Matriz} matrizOriginal Matriz a copiar.
- * @returns {Matriz} Una copia exacta de la matriz ingresada.
- */
-function copiarMatriz(matrizOriginal) {
-  const copia = [];
-
-  for (let i = 0; i < matrizOriginal.length; i++) { //Se recorren los elementos y se van copiando
-    copia[i] = [];
-    for (let j = 0; j < matrizOriginal[i].length; j++) {
-      copia[i][j] = matrizOriginal[i][j]; 
-    }
-  }
-
-  return copia;
-}
-
-/**
- * Funcion que obtiene el indice del elemento con menor valor en un arreglo
- * @param {Array<Int>} abiertos Arreglo a procesar
- * @returns {Int} Indice del elemento con menor valor
- */
-function determinarMenor(abiertos){
-  index = 0;
-  menor = 100000000;
-  for (let i = 0; i < abiertos.length; i++) { //Se recorre elemento por elemento y se va guardando el menor de todos
-    if(abiertos[i].peso<menor){
-      menor = abiertos[i].peso;
-      index = i;
-    }
-  }
-  return index; //Se retorna la posicion en la que esta
-}
-
-function sinSolucion(){
-  let fondo = document.getElementById('pantallaFondo');
-  let fondoTexto = document.getElementById("textoEmergente");
-  fondoTexto.innerHTML = 'Problema muy complejo, no se encontro solucion';
-  fondo.style.display = "flex";
-
-  aceptarBtn.addEventListener("click", function(e) {
-    e.preventDefault();
-    fondo.style.display = "none";
-  });
-}
-
+//---------------------------------------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
 
