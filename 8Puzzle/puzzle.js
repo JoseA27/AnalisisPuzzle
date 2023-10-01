@@ -608,6 +608,8 @@ function solAlgoritmoA(mJuego,size){
   }
   return listaCamino
 }
+
+
 /**
  * Funcion que genera un maximo de 3 matrices equivalentes a los 3 movimientos posibles en el juego y los introduce en un arreglo
  * @param {Matriz} padre Matriz de donde provienen las matrices resultantes
